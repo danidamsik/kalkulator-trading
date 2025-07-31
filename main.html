@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator Manajemen Risiko</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs" defer></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+  <div x-data="riskCalculator()" class="bg-white shadow-2xl rounded-3xl p-8 w-full max-w-xl">
+    <div class="flex items-center gap-4 mb-6">
+      <i class="fas fa-calculator text-blue-600 text-3xl"></i>
+      <h1 class="text-3xl font-bold text-gray-800">Kalkulator Trading</h1>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5">
+      <div>
+        <label class="block font-semibold text-sm mb-1 text-gray-700">Harga Entry (E)</label>
+        <input type="number" step="any" x-model.number="entry" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm mb-1 text-gray-700">Harga Stop Loss (SL)</label>
+        <input type="number" step="any" x-model.number="stopLoss" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm mb-1 text-gray-700">Take Profit (TP)</label>
+        <input type="number" step="any" x-model.number="takeProfit" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm mb-1 text-gray-700">Risiko (R) dalam USDT</label>
+        <input type="number" step="any" x-model.number="risk" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label class="block font-semibold text-sm mb-1 text-gray-700">Total Fee (Buy + Sell) dalam %</label>
+        <input type="number" step="any" x-model.number="totalFeePercent" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <button @click="calculate" class="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+        <i class="fas fa-equals"></i> Hitung
+      </button>
+
+      <template x-if="invested > 0">
+        <div class="mt-4 bg-blue-50 border border-blue-200 p-5 rounded-xl space-y-2">
+          <div class="flex items-center gap-2 text-blue-700">
+            <i class="fas fa-coins"></i>
+            <p class="text-lg font-medium">Jumlah Coin: <span class="font-bold" x-text="coins.toFixed(6)"></span></p>
+          </div>
+
+          <div class="flex items-center gap-2 text-blue-700">
+            <i class="fas fa-wallet"></i>
+            <p class="text-lg font-medium">Total Investasi: <span class="font-bold" x-text="invested.toFixed(2)"></span> USDT</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-green-700">
+            <i class="fas fa-chart-line"></i>
+            <p class="text-lg font-medium">Potensi Keuntungan: <span class="font-bold" x-text="profit.toFixed(2)"></span> USDT</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-purple-700">
+            <i class="fas fa-balance-scale"></i>
+            <p class="text-lg font-medium">Risk-Reward Ratio: <span class="font-bold" x-text="(profit / risk).toFixed(2)"></span></p>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <script>
+    function riskCalculator() {
+      return {
+        entry: 0,
+        stopLoss: 0,
+        takeProfit: 0,
+        risk: 0,
+        totalFeePercent: 0.2,
+        coins: 0,
+        invested: 0,
+        profit: 0,
+
+        calculate() {
+          const E = this.entry;
+          const SL = this.stopLoss;
+          const TP = this.takeProfit;
+          const R = this.risk;
+          const fTotal = this.totalFeePercent / 100;
+
+          if (E <= SL || R <= 0 || TP <= E) {
+            alert('Pastikan: Harga Entry > Stop Loss, Risiko > 0, dan Take Profit > Entry');
+            return;
+          }
+
+          const fBuy = fTotal / 2;
+          const fSell = fTotal / 2;
+
+          const unit = R / ((E - SL) + (E * fBuy) + (SL * fSell));
+          const invest = unit * E * (1 + fBuy);
+          const profit = unit * TP * (1 - fSell) - invest;
+
+          this.coins = unit;
+          this.invested = invest;
+          this.profit = profit;
+        }
+      }
+    }
+  </script>
+</body>
+</html>
