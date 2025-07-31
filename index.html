@@ -41,12 +41,17 @@
         <input type="number" step="any" x-model.number="totalFeePercent" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
       </div>
 
+      <div>
+        <label class="block font-semibold text-sm mb-1 text-gray-700">Kurs 1 USDT ke Rupiah (Rp)</label>
+        <input type="number" step="any" x-model.number="exchangeRate" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+      </div>
+
       <button @click="calculate" class="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
         <i class="fas fa-equals"></i> Hitung
       </button>
 
       <template x-if="invested > 0">
-        <div class="mt-4 bg-blue-50 border border-blue-200 p-5 rounded-xl space-y-2">
+        <div class="mt-4 bg-blue-50 border border-blue-200 p-5 rounded-xl space-y-3">
           <div class="flex items-center gap-2 text-blue-700">
             <i class="fas fa-coins"></i>
             <p class="text-lg font-medium">Jumlah Coin: <span class="font-bold" x-text="coins.toFixed(6)"></span></p>
@@ -54,12 +59,22 @@
 
           <div class="flex items-center gap-2 text-blue-700">
             <i class="fas fa-wallet"></i>
-            <p class="text-lg font-medium">Total Investasi: <span class="font-bold" x-text="invested.toFixed(2)"></span> USDT</p>
+            <p class="text-lg font-medium">Investasi (USDT): <span class="font-bold" x-text="invested.toFixed(2)"></span> USDT</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-blue-700">
+            <i class="fas fa-money-bill-wave"></i>
+            <p class="text-lg font-medium">Investasi (IDR): <span class="font-bold" x-text="formatRupiah(invested * exchangeRate)"></span></p>
           </div>
 
           <div class="flex items-center gap-2 text-green-700">
             <i class="fas fa-chart-line"></i>
-            <p class="text-lg font-medium">Potensi Keuntungan: <span class="font-bold" x-text="profit.toFixed(2)"></span> USDT</p>
+            <p class="text-lg font-medium">Profit (USDT): <span class="font-bold" x-text="profit.toFixed(2)"></span> USDT</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-green-700">
+            <i class="fas fa-sack-dollar"></i>
+            <p class="text-lg font-medium">Profit (IDR): <span class="font-bold" x-text="formatRupiah(profit * exchangeRate)"></span></p>
           </div>
 
           <div class="flex items-center gap-2 text-purple-700">
@@ -77,8 +92,9 @@
         entry: 0,
         stopLoss: 0,
         takeProfit: 0,
-        risk: 0,
+        risk: 0, // dalam USDT
         totalFeePercent: 0.2,
+        exchangeRate: 16400, // 1 USDT = Rp 16.000 (default)
         coins: 0,
         invested: 0,
         profit: 0,
@@ -105,6 +121,13 @@
           this.coins = unit;
           this.invested = invest;
           this.profit = profit;
+        },
+
+        formatRupiah(value) {
+          return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR'
+          }).format(value);
         }
       }
     }
