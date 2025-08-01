@@ -1,125 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kalkulator Manajemen Risiko</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/alpinejs" defer></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
-  <div x-data="riskCalculator()" x-init="fetchExchangeRate()" class="bg-white shadow-2xl rounded-3xl p-8 w-full max-w-xl">
-    <div class="flex items-center gap-4 mb-6">
-      <i class="fas fa-calculator text-blue-600 text-3xl"></i>
-      <h1 class="text-3xl font-bold text-gray-800">Kalkulator Trading</h1>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-4">
+  <div x-data="riskCalculator()" x-init="fetchExchangeRate(); loadHistory()" class="max-w-3xl mx-auto space-y-6">
+    <div class="bg-white shadow-2xl rounded-3xl p-8">
+      <div class="flex items-center gap-4 mb-6">
+        <i class="fas fa-calculator text-blue-600 text-3xl"></i>
+        <h1 class="text-3xl font-bold text-gray-800">Kalkulator Trading</h1>
+      </div>
+
+      <div class="grid grid-cols-1 gap-5">
+        <!-- Input Form -->
+        <div>
+          <label class="block font-semibold text-sm mb-1 text-gray-700">Nama Coin (misal: BTCUSDT)</label>
+          <input type="text" x-model.trim="coinName" placeholder="Contoh: SUIUSDT" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-sm mb-1 text-gray-700">Harga Entry (E)</label>
+          <input type="number" step="any" x-model.number="entry" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-sm mb-1 text-gray-700">Harga Stop Loss (SL)</label>
+          <input type="number" step="any" x-model.number="stopLoss" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-sm mb-1 text-gray-700">Take Profit (TP)</label>
+          <input type="number" step="any" x-model.number="takeProfit" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-sm mb-1 text-gray-700">Risiko (R) dalam USDT</label>
+          <input type="number" step="any" x-model.number="risk" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-sm mb-1 text-gray-700">Total Fee (Buy + Sell) dalam %</label>
+          <input type="number" step="any" x-model.number="totalFeePercent" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"/>
+          <p class="text-sm text-gray-600 mt-1">
+            Kurs saat ini: <span class="font-semibold text-blue-700" x-text="formatRupiah(exchangeRate) + ' / USDT'"></span>
+          </p>
+        </div>
+
+        <!-- Tombol -->
+        <div class="flex gap-2">
+          <button @click="calculate" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+            <i class="fas fa-equals"></i> Hitung
+          </button>
+          <button @click="fetchExchangeRate" class="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-3 rounded-lg font-semibold">
+            🔄 Kurs
+          </button>
+        </div>
+
+        <!-- Hasil Kalkulasi -->
+        <template x-if="invested > 0">
+          <div class="mt-4 bg-blue-50 border border-blue-200 p-5 rounded-xl space-y-3">
+            <div class="flex items-center gap-2 text-blue-700">
+              <i class="fas fa-coins"></i>
+              <p class="text-lg font-medium">Jumlah Coin: <span class="font-bold" x-text="coins.toFixed(6)"></span></p>
+            </div>
+
+            <div class="flex items-center gap-2 text-blue-700">
+              <i class="fas fa-wallet"></i>
+              <p class="text-lg font-medium">Investasi (USDT): <span class="font-bold" x-text="invested.toFixed(2)"></span> USDT</p>
+            </div>
+
+            <div class="flex items-center gap-2 text-blue-700">
+              <i class="fas fa-money-bill-wave"></i>
+              <p class="text-lg font-medium">Investasi (IDR): <span class="font-bold" x-text="formatRupiah(invested * exchangeRate)"></span></p>
+            </div>
+
+            <div class="flex items-center gap-2 text-red-600">
+              <i class="fas fa-arrow-down"></i>
+              <p class="text-lg font-medium">Kerugian (USDT jika SL): <span class="font-bold" x-text="loss.toFixed(2)"></span> USDT</p>
+            </div>
+
+            <div class="flex items-center gap-2 text-red-600">
+              <i class="fas fa-money-bill-wave"></i>
+              <p class="text-lg font-medium">Kerugian (IDR jika SL): <span class="font-bold" x-text="formatRupiah(loss * exchangeRate)"></span></p>
+            </div>
+
+            <div class="flex items-center gap-2 text-green-700">
+              <i class="fas fa-chart-line"></i>
+              <p class="text-lg font-medium">Profit (USDT jika TP): <span class="font-bold" x-text="profit.toFixed(2)"></span> USDT</p>
+            </div>
+
+            <div class="flex items-center gap-2 text-green-700">
+              <i class="fas fa-sack-dollar"></i>
+              <p class="text-lg font-medium">Profit (IDR jika TP): <span class="font-bold" x-text="formatRupiah(profit * exchangeRate)"></span></p>
+            </div>
+
+            <div class="flex items-center gap-2 text-purple-700">
+              <i class="fas fa-balance-scale"></i>
+              <p class="text-lg font-medium">Risk-Reward Ratio: <span class="font-bold" x-text="(profit / loss).toFixed(2)"></span></p>
+            </div>
+
+            <div class="flex items-center gap-2 text-indigo-700">
+              <i class="fas fa-arrow-trend-up"></i>
+              <p class="text-lg font-medium">PnL Profit: <span class="font-bold" x-text="pnlProfitPercent.toFixed(2) + '%'"></span></p>
+            </div>
+
+            <div class="flex items-center gap-2 text-pink-700">
+              <i class="fas fa-arrow-trend-down"></i>
+              <p class="text-lg font-medium">PnL Loss: <span class="font-bold" x-text="pnlLossPercent.toFixed(2) + '%'"></span></p>
+            </div>
+          </div>
+        </template>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-5">
-      <div>
-        <label class="block font-semibold text-sm mb-1 text-gray-700">Harga Entry (E)</label>
-        <input type="number" step="any" x-model.number="entry" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+    <!-- Riwayat -->
+    <div x-show="history.length" class="bg-white shadow-md rounded-2xl p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-history mr-2"></i>Riwayat Kalkulasi</h2>
+        <button @click="clearHistory" class="text-red-600 hover:underline"><i class="fas fa-trash"></i> Hapus Semua</button>
       </div>
-
-      <div>
-        <label class="block font-semibold text-sm mb-1 text-gray-700">Harga Stop Loss (SL)</label>
-        <input type="number" step="any" x-model.number="stopLoss" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-      </div>
-
-      <div>
-        <label class="block font-semibold text-sm mb-1 text-gray-700">Take Profit (TP)</label>
-        <input type="number" step="any" x-model.number="takeProfit" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-      </div>
-
-      <div>
-        <label class="block font-semibold text-sm mb-1 text-gray-700">Risiko (R) dalam USDT</label>
-        <input type="number" step="any" x-model.number="risk" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-      </div>
-
-      <div>
-        <label class="block font-semibold text-sm mb-1 text-gray-700">Total Fee (Buy + Sell) dalam %</label>
-        <input type="number" step="any" x-model.number="totalFeePercent" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-      </div>
-
-      <!-- Kurs otomatis tampil -->
-      <template x-if="exchangeRate">
-        <div class="text-sm text-gray-500 italic">
-          Kurs otomatis: 1 USDT = <span x-text="formatRupiah(exchangeRate)"></span>
-        </div>
-      </template>
-
-      <button @click="calculate" class="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
-        <i class="fas fa-equals"></i> Hitung
-      </button>
-
-      <template x-if="invested > 0">
-        <div class="mt-4 bg-blue-50 border border-blue-200 p-5 rounded-xl space-y-3">
-          <div class="flex items-center gap-2 text-blue-700">
-            <i class="fas fa-coins"></i>
-            <p class="text-lg font-medium">Jumlah Coin: <span class="font-bold" x-text="coins.toFixed(6)"></span></p>
-          </div>
-
-          <div class="flex items-center gap-2 text-blue-700">
-            <i class="fas fa-wallet"></i>
-            <p class="text-lg font-medium">Investasi (USDT): <span class="font-bold" x-text="invested.toFixed(2)"></span> USDT</p>
-          </div>
-
-          <div class="flex items-center gap-2 text-blue-700">
-            <i class="fas fa-money-bill-wave"></i>
-            <p class="text-lg font-medium">Investasi (IDR): <span class="font-bold" x-text="formatRupiah(invested * exchangeRate)"></span></p>
-          </div>
-
-          <div class="flex items-center gap-2 text-red-600">
-            <i class="fas fa-arrow-down"></i>
-            <p class="text-lg font-medium">Risiko (USDT): <span class="font-bold" x-text="loss.toFixed(2)"></span> USDT</p>
-          </div>
-
-          <div class="flex items-center gap-2 text-red-600">
-            <i class="fas fa-arrow-down-wide-short"></i>
-            <p class="text-lg font-medium">Risiko (IDR): <span class="font-bold" x-text="formatRupiah(loss * exchangeRate)"></span></p>
-          </div>
-
-          <div class="flex items-center gap-2 text-green-700">
-            <i class="fas fa-chart-line"></i>
-            <p class="text-lg font-medium">Profit (USDT): <span class="font-bold" x-text="profit.toFixed(2)"></span> USDT</p>
-          </div>
-
-          <div class="flex items-center gap-2 text-green-700">
-            <i class="fas fa-sack-dollar"></i>
-            <p class="text-lg font-medium">Profit (IDR): <span class="font-bold" x-text="formatRupiah(profit * exchangeRate)"></span></p>
-          </div>
-
-          <div class="flex items-center gap-2 text-purple-700">
-            <i class="fas fa-balance-scale"></i>
-            <p class="text-lg font-medium">Risk-Reward Ratio: <span class="font-bold" x-text="(profit / loss).toFixed(2)"></span></p>
-          </div>
-        </div>
-      </template>
+      <ul class="space-y-3 max-h-80 overflow-y-auto">
+        <template x-for="item in history" :key="item.timestamp">
+          <li class="border p-3 rounded-lg bg-white shadow">
+            <div class="font-semibold text-blue-800"><i class="fas fa-coins mr-1"></i> <span x-text="item.coinName"></span></div>
+            <div><strong>Entry:</strong> <span x-text="item.entry"></span>, <strong>SL:</strong> <span x-text="item.stopLoss"></span>, <strong>TP:</strong> <span x-text="item.takeProfit"></span></div>
+            <div>
+              <strong>Risk:</strong> <span x-text="item.risk + ' USDT'"></span>,
+              <strong>Profit:</strong>
+              <span x-text="item.profit !== undefined ? item.profit.toFixed(2) + ' USDT' : '-'"></span>,
+              <strong>RR:</strong> <span x-text="formatNumber(item.rr, 2)"></span>
+            </div>
+            <div class="text-gray-500 italic" x-text="new Date(item.timestamp).toLocaleString()"></div>
+          </li>
+        </template>
+      </ul>
     </div>
   </div>
 
+  <!-- Script -->
   <script>
     function riskCalculator() {
       return {
         entry: 0,
         stopLoss: 0,
         takeProfit: 0,
-        risk: 0, // dalam USDT
+        risk: 0,
         totalFeePercent: 0.2,
-        exchangeRate: null, // dari API
+        exchangeRate: 16000,
+        coinName: '',
         coins: 0,
         invested: 0,
         profit: 0,
         loss: 0,
+        pnlProfitPercent: 0,
+        pnlLossPercent: 0,
+        history: [],
 
         async fetchExchangeRate() {
           try {
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+            if (!res.ok) throw new Error('Gagal fetch kurs');
             const data = await res.json();
+            if (!data.tether || typeof data.tether.idr !== 'number') throw new Error('Data kurs tidak valid');
             this.exchangeRate = data.tether.idr;
           } catch (e) {
-            alert('Gagal mengambil kurs dari CoinGecko');
-            this.exchangeRate = 16000; // fallback default
+            alert('Gagal mengambil kurs otomatis, gunakan default Rp 16.000');
+            this.exchangeRate = 16000;
           }
         },
 
@@ -131,7 +182,7 @@
           const fTotal = this.totalFeePercent / 100;
 
           if (E <= SL || R <= 0 || TP <= E) {
-            alert('Pastikan: Harga Entry > Stop Loss, Risiko > 0, dan Take Profit > Entry');
+            alert('Pastikan: Entry > Stop Loss, Risiko > 0, dan Take Profit > Entry');
             return;
           }
 
@@ -141,19 +192,54 @@
           const unit = R / ((E - SL) + (E * fBuy) + (SL * fSell));
           const invest = unit * E * (1 + fBuy);
           const profit = unit * TP * (1 - fSell) - invest;
-          const loss = R; // risiko tetap adalah nilai risiko yang ditentukan user (R)
+          const loss = R;
 
           this.coins = unit;
           this.invested = invest;
           this.profit = profit;
           this.loss = loss;
+          this.pnlProfitPercent = (profit / invest) * 100;
+          this.pnlLossPercent = (loss / invest) * 100;
+
+          const calc = {
+            coinName: this.coinName || 'Tanpa Nama',
+            entry: E,
+            stopLoss: SL,
+            takeProfit: TP,
+            risk: R,
+            rr: profit / loss,
+            profit: profit,
+            timestamp: Date.now()
+          };
+
+          this.history.unshift(calc);
+          localStorage.setItem('calcHistory', JSON.stringify(this.history));
+        },
+
+        loadHistory() {
+          const data = localStorage.getItem('calcHistory');
+          if (data) {
+            try {
+              this.history = JSON.parse(data);
+            } catch (e) {
+              this.history = [];
+            }
+          }
+        },
+
+        clearHistory() {
+          if (confirm('Hapus semua riwayat kalkulasi?')) {
+            this.history = [];
+            localStorage.removeItem('calcHistory');
+          }
         },
 
         formatRupiah(value) {
-          return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR'
-          }).format(value);
+          return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+        },
+
+        formatNumber(value, decimals) {
+          return parseFloat(value).toFixed(decimals);
         }
       }
     }
