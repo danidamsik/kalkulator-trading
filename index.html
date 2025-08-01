@@ -9,7 +9,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
-  <div x-data="riskCalculator()" class="bg-white shadow-2xl rounded-3xl p-8 w-full max-w-xl">
+  <div x-data="riskCalculator()" x-init="fetchExchangeRate()" class="bg-white shadow-2xl rounded-3xl p-8 w-full max-w-xl">
     <div class="flex items-center gap-4 mb-6">
       <i class="fas fa-calculator text-blue-600 text-3xl"></i>
       <h1 class="text-3xl font-bold text-gray-800">Kalkulator Trading</h1>
@@ -41,10 +41,12 @@
         <input type="number" step="any" x-model.number="totalFeePercent" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
       </div>
 
-      <div>
-        <label class="block font-semibold text-sm mb-1 text-gray-700">Kurs 1 USDT ke Rupiah (Rp)</label>
-        <input type="number" step="any" x-model.number="exchangeRate" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-      </div>
+      <!-- Kurs otomatis tampil -->
+      <template x-if="exchangeRate">
+        <div class="text-sm text-gray-500 italic">
+          Kurs otomatis: 1 USDT = <span x-text="formatRupiah(exchangeRate)"></span>
+        </div>
+      </template>
 
       <button @click="calculate" class="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
         <i class="fas fa-equals"></i> Hitung
@@ -67,6 +69,16 @@
             <p class="text-lg font-medium">Investasi (IDR): <span class="font-bold" x-text="formatRupiah(invested * exchangeRate)"></span></p>
           </div>
 
+          <div class="flex items-center gap-2 text-red-600">
+            <i class="fas fa-arrow-down"></i>
+            <p class="text-lg font-medium">Risiko (USDT): <span class="font-bold" x-text="loss.toFixed(2)"></span> USDT</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-red-600">
+            <i class="fas fa-arrow-down-wide-short"></i>
+            <p class="text-lg font-medium">Risiko (IDR): <span class="font-bold" x-text="formatRupiah(loss * exchangeRate)"></span></p>
+          </div>
+
           <div class="flex items-center gap-2 text-green-700">
             <i class="fas fa-chart-line"></i>
             <p class="text-lg font-medium">Profit (USDT): <span class="font-bold" x-text="profit.toFixed(2)"></span> USDT</p>
@@ -79,7 +91,7 @@
 
           <div class="flex items-center gap-2 text-purple-700">
             <i class="fas fa-balance-scale"></i>
-            <p class="text-lg font-medium">Risk-Reward Ratio: <span class="font-bold" x-text="(profit / risk).toFixed(2)"></span></p>
+            <p class="text-lg font-medium">Risk-Reward Ratio: <span class="font-bold" x-text="(profit / loss).toFixed(2)"></span></p>
           </div>
         </div>
       </template>
@@ -94,10 +106,22 @@
         takeProfit: 0,
         risk: 0, // dalam USDT
         totalFeePercent: 0.2,
-        exchangeRate: 16400, // 1 USDT = Rp 16.000 (default)
+        exchangeRate: null, // dari API
         coins: 0,
         invested: 0,
         profit: 0,
+        loss: 0,
+
+        async fetchExchangeRate() {
+          try {
+            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+            const data = await res.json();
+            this.exchangeRate = data.tether.idr;
+          } catch (e) {
+            alert('Gagal mengambil kurs dari CoinGecko');
+            this.exchangeRate = 16000; // fallback default
+          }
+        },
 
         calculate() {
           const E = this.entry;
@@ -117,10 +141,12 @@
           const unit = R / ((E - SL) + (E * fBuy) + (SL * fSell));
           const invest = unit * E * (1 + fBuy);
           const profit = unit * TP * (1 - fSell) - invest;
+          const loss = R; // risiko tetap adalah nilai risiko yang ditentukan user (R)
 
           this.coins = unit;
           this.invested = invest;
           this.profit = profit;
+          this.loss = loss;
         },
 
         formatRupiah(value) {
