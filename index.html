@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,97 +13,99 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: { "50": "#eff6ff", "100": "#dbeafe", "200": "#bfdbfe", "300": "#93c5fd", "400": "#60a5fa", "500": "#3b82f6", "600": "#2563eb", "700": "#1d4ed8", "800": "#1e40af", "900": "#1e3a8a" }
+                        primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a"}
                     }
                 }
             }
         }
     </script>
     <style>
-        [x-cloak] {
-            display: none !important;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-300">
     <div class="container mx-auto px-4 py-8" x-data="tradingCalculator()" x-init="init()">
         <div class="max-w-4xl mx-auto">
-            <h1 class="text-3xl font-bold text-center mb-6 flex items-center justify-center">
-                <i class="fas fa-calculator mr-3 text-primary-600 dark:text-primary-400"></i>
-                Crypto Trading Calculator
-            </h1>
-
+            <!-- Header dengan Toggle Dark Mode -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold flex items-center">
+                    <i class="fas fa-calculator mr-3 text-primary-600 dark:text-primary-400"></i>
+                    Crypto Trading Calculator
+                </h1>
+                <button @click="toggleDarkMode()" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300">
+                    <i x-show="!darkMode" class="fas fa-moon text-gray-700 dark:text-gray-300"></i>
+                    <i x-show="darkMode" class="fas fa-sun text-yellow-400"></i>
+                </button>
+            </div>
+            
             <!-- Exchange Rate Display -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 flex justify-between items-center">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 flex justify-between items-center transition-colors duration-300">
                 <div>
                     <span class="font-semibold">USDT to IDR Rate:</span>
-                    <span x-text="exchangeRate ? '1 USDT = ' + formatNumber(exchangeRate) + ' IDR' : 'Loading...'"
-                        class="ml-2"></span>
+                    <span x-text="exchangeRate ? '1 USDT = ' + formatNumber(exchangeRate) + ' IDR' : 'Loading...'" 
+                          class="ml-2"></span>
                 </div>
-                <button @click="fetchExchangeRate"
-                    class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300">
+                <button @click="fetchExchangeRate" class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors duration-300">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </button>
             </div>
-
+            
             <!-- Calculator Form -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors duration-300">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-edit mr-2 text-primary-600 dark:text-primary-400"></i>
                     Trading Parameters
                 </h2>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-medium mb-1">Coin Name</label>
-                        <input type="text" x-model="coinName"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                        <input type="text" x-model="coinName" 
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Entry Price (USDT)</label>
                         <input type="number" step="0.000001" x-model="entryPrice" @input="calculate"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Stop Loss Price (USDT)</label>
                         <input type="number" step="0.000001" x-model="stopLoss" @input="calculate"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Take Profit Price (USDT)</label>
                         <input type="number" step="0.000001" x-model="takeProfit" @input="calculate"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Risk Amount (USDT)</label>
                         <input type="number" step="0.01" x-model="riskAmount" @input="calculate"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Total Fee (Buy + Sell) (%)</label>
                         <input type="number" step="0.01" x-model="totalFee" @input="calculate"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                 </div>
-
+                
                 <div class="flex justify-end">
-                    <button @click="calculate"
-                        class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md flex items-center">
+                    <button @click="calculate" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md flex items-center transition-colors duration-300">
                         <i class="fas fa-calculator mr-2"></i> Calculate
                     </button>
                 </div>
             </div>
-
+            
             <!-- Results -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6" x-show="resultsCalculated">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors duration-300" x-show="resultsCalculated">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-chart-line mr-2 text-primary-600 dark:text-primary-400"></i>
                     Calculation Results
                 </h2>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md transition-colors duration-300">
                         <h3 class="font-medium mb-2 text-primary-600 dark:text-primary-400">Position Details</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
@@ -121,50 +122,44 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md transition-colors duration-300">
                         <h3 class="font-medium mb-2 text-red-600 dark:text-red-400">Loss Scenario</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
                                 <span>Loss (USDT):</span>
-                                <span x-text="lossUSDT ? formatNumber(lossUSDT, 2) : '0'"
-                                    class="text-red-600 dark:text-red-400"></span>
+                                <span x-text="lossUSDT ? formatNumber(lossUSDT, 2) : '0'" class="text-red-600 dark:text-red-400"></span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Loss (IDR):</span>
-                                <span x-text="lossIDR ? formatNumber(lossIDR) : '0'"
-                                    class="text-red-600 dark:text-red-400"></span>
+                                <span x-text="lossIDR ? formatNumber(lossIDR) : '0'" class="text-red-600 dark:text-red-400"></span>
                             </div>
                             <div class="flex justify-between">
                                 <span>PNL (%):</span>
-                                <span x-text="pnlLoss ? formatNumber(pnlLoss, 2) + '%' : '0%'"
-                                    class="text-red-600 dark:text-red-400"></span>
+                                <span x-text="pnlLoss ? formatNumber(pnlLoss, 2) + '%' : '0%'" class="text-red-600 dark:text-red-400"></span>
                             </div>
                         </div>
                     </div>
-
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md transition-colors duration-300">
                         <h3 class="font-medium mb-2 text-green-600 dark:text-green-400">Profit Scenario</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
                                 <span>Profit (USDT):</span>
-                                <span x-text="profitUSDT ? formatNumber(profitUSDT, 2) : '0'"
-                                    class="text-green-600 dark:text-green-400"></span>
+                                <span x-text="profitUSDT ? formatNumber(profitUSDT, 2) : '0'" class="text-green-600 dark:text-green-400"></span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Profit (IDR):</span>
-                                <span x-text="profitIDR ? formatNumber(profitIDR) : '0'"
-                                    class="text-green-600 dark:text-green-400"></span>
+                                <span x-text="profitIDR ? formatNumber(profitIDR) : '0'" class="text-green-600 dark:text-green-400"></span>
                             </div>
                             <div class="flex justify-between">
                                 <span>PNL (%):</span>
-                                <span x-text="pnlProfit ? formatNumber(pnlProfit, 2) + '%' : '0%'"
-                                    class="text-green-600 dark:text-green-400"></span>
+                                <span x-text="pnlProfit ? formatNumber(pnlProfit, 2) + '%' : '0%'" class="text-green-600 dark:text-green-400"></span>
                             </div>
                         </div>
                     </div>
-
-                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md transition-colors duration-300">
                         <h3 class="font-medium mb-2 text-yellow-600 dark:text-yellow-400">Risk Analysis</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
@@ -178,56 +173,35 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="mt-4 flex justify-end">
-                    <button @click="saveToHistory"
-                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center">
+                    <button @click="saveToHistory" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center transition-colors duration-300">
                         <i class="fas fa-save mr-2"></i> Save to History
                     </button>
                 </div>
             </div>
-
+            
             <!-- History -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-300">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <i class="fas fa-history mr-2 text-primary-600 dark:text-primary-400"></i>
                     Calculation History
                 </h2>
-
+                
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Coin</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Amount</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Invest</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Entry</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    SL</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    TP</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Risk</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Profit</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    RR</th>
-                                <th
-                                    class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                    Action</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Coin</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Amount</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Invest</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Entry</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">SL</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">TP</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Risk</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Profit</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">RR</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Action</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -243,28 +217,24 @@
                                     <td class="px-4 py-2" x-text="formatNumber(item.profitUSDT, 2)"></td>
                                     <td class="px-4 py-2" x-text="formatNumber(item.riskRewardRatio, 2)"></td>
                                     <td class="px-4 py-2">
-                                        <button @click="loadFromHistory(index)"
-                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2">
+                                        <button @click="loadFromHistory(index)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mr-2 transition-colors duration-300">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button @click="deleteFromHistory(index)"
-                                            class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                                        <button @click="deleteFromHistory(index)" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-300">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
                             </template>
                             <tr x-show="history.length === 0">
-                                <td colspan="10" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No
-                                    history yet</td>
+                                <td colspan="10" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No history yet</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
+                
                 <div class="mt-4 flex justify-end" x-show="history.length > 0">
-                    <button @click="clearHistory"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md flex items-center">
+                    <button @click="clearHistory" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md flex items-center transition-colors duration-300">
                         <i class="fas fa-trash mr-2"></i> Clear All History
                     </button>
                 </div>
@@ -282,7 +252,8 @@
                 riskAmount: '',
                 totalFee: 0.2,
                 exchangeRate: null,
-
+                darkMode: false,
+                
                 // Results
                 coinAmount: 0,
                 investmentUSDT: 0,
@@ -295,22 +266,44 @@
                 pnlProfit: 0,
                 pnlLoss: 0,
                 riskPercentage: 0,
-
+                
                 resultsCalculated: false,
                 history: [],
-
+                
                 init() {
                     this.fetchExchangeRate();
                     this.loadHistory();
-
-                    // Check for dark mode preference
-                    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                        document.documentElement.classList.add('dark')
+                    this.checkDarkModePreference();
+                },
+                
+                checkDarkModePreference() {
+                    // Check localStorage first
+                    if (localStorage.getItem('darkMode') === 'true') {
+                        this.darkMode = true;
+                        document.documentElement.classList.add('dark');
+                    } else if (localStorage.getItem('darkMode') === 'false') {
+                        this.darkMode = false;
+                        document.documentElement.classList.remove('dark');
                     } else {
-                        document.documentElement.classList.remove('dark')
+                        // Fallback to system preference
+                        this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                        if (this.darkMode) {
+                            document.documentElement.classList.add('dark');
+                        }
                     }
                 },
-
+                
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('darkMode', 'true');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('darkMode', 'false');
+                    }
+                },
+                
                 async fetchExchangeRate() {
                     try {
                         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
@@ -319,52 +312,52 @@
                     } catch (error) {
                         console.error('Error fetching exchange rate:', error);
                         // Fallback rate if API fails
-                        this.exchangeRate = 16000;
+                        this.exchangeRate = 15000;
                     }
                 },
-
+                
                 calculate() {
                     if (!this.entryPrice || !this.stopLoss || !this.takeProfit || !this.riskAmount) {
                         return;
                     }
-
+                    
                     const entry = parseFloat(this.entryPrice);
                     const sl = parseFloat(this.stopLoss);
                     const tp = parseFloat(this.takeProfit);
                     const risk = parseFloat(this.riskAmount);
                     const fee = parseFloat(this.totalFee) / 100;
-
+                    
                     // Calculate coin amount (considering fee)
                     const positionSize = risk / Math.abs(entry - sl);
                     this.coinAmount = positionSize;
-
+                    
                     // Calculate investment (including buy fee)
                     this.investmentUSDT = entry * positionSize * (1 + fee);
                     this.investmentIDR = this.investmentUSDT * this.exchangeRate;
-
+                    
                     // Calculate loss (including sell fee)
                     const exitLossAmount = sl * positionSize * (1 - fee);
                     this.lossUSDT = this.investmentUSDT - exitLossAmount;
                     this.lossIDR = this.lossUSDT * this.exchangeRate;
-
+                    
                     // Calculate profit (including sell fee)
                     const exitProfitAmount = tp * positionSize * (1 - fee);
                     this.profitUSDT = exitProfitAmount - this.investmentUSDT;
                     this.profitIDR = this.profitUSDT * this.exchangeRate;
-
+                    
                     // Calculate PNL percentages
                     this.pnlLoss = (this.lossUSDT / this.investmentUSDT) * 100;
                     this.pnlProfit = (this.profitUSDT / this.investmentUSDT) * 100;
-
+                    
                     // Calculate risk/reward ratio
                     this.riskRewardRatio = this.profitUSDT / this.lossUSDT;
-
+                    
                     // Calculate risk percentage
                     this.riskPercentage = (this.lossUSDT / this.investmentUSDT) * 100;
-
+                    
                     this.resultsCalculated = true;
                 },
-
+                
                 formatNumber(num, decimals = 2) {
                     if (!num) return '0';
                     return parseFloat(num).toLocaleString(undefined, {
@@ -372,27 +365,27 @@
                         maximumFractionDigits: decimals
                     });
                 },
-
+                
                 saveToHistory() {
                     if (!this.resultsCalculated) return;
-
+                    
                     const historyItem = {
                         coinName: this.coinName,
                         entryPrice: parseFloat(this.entryPrice),
                         stopLoss: parseFloat(this.stopLoss),
                         takeProfit: parseFloat(this.takeProfit),
                         riskAmount: parseFloat(this.riskAmount),
-                        coinAmount: this.coinAmount, // Ditambahkan
-                        investmentUSDT: this.investmentUSDT, // Ditambahkan
+                        coinAmount: this.coinAmount,
+                        investmentUSDT: this.investmentUSDT,
                         profitUSDT: this.profitUSDT,
                         riskRewardRatio: this.riskRewardRatio,
                         timestamp: new Date().toISOString()
                     };
-
+                    
                     this.history.unshift(historyItem);
                     this.saveHistory();
                 },
-
+                
                 loadFromHistory(index) {
                     if (index >= 0 && index < this.history.length) {
                         const item = this.history[index];
@@ -401,36 +394,32 @@
                         this.stopLoss = item.stopLoss;
                         this.takeProfit = item.takeProfit;
                         this.riskAmount = item.riskAmount;
-
-                        // Set hasil kalkulasi sebelumnya
-                        this.coinAmount = item.coinAmount;
-                        this.investmentUSDT = item.investmentUSDT;
-
+                        
                         this.calculate();
                     }
                 },
-
+                
                 deleteFromHistory(index) {
                     if (index >= 0 && index < this.history.length) {
                         this.history.splice(index, 1);
                         this.saveHistory();
                     }
                 },
-
+                
                 clearHistory() {
                     if (confirm('Are you sure you want to clear all history?')) {
                         this.history = [];
                         this.saveHistory();
                     }
                 },
-
+                
                 loadHistory() {
                     const savedHistory = localStorage.getItem('cryptoCalculatorHistory');
                     if (savedHistory) {
                         this.history = JSON.parse(savedHistory);
                     }
                 },
-
+                
                 saveHistory() {
                     localStorage.setItem('cryptoCalculatorHistory', JSON.stringify(this.history));
                 }
@@ -438,5 +427,4 @@
         });
     </script>
 </body>
-
 </html>
