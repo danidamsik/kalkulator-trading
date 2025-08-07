@@ -84,8 +84,13 @@
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Total Fee (Buy + Sell) (%)</label>
-                        <input type="number" step="0.01" x-model="totalFee" @input="calculate"
+                        <label class="block text-sm font-medium mb-1">Buy Fee (%)</label>
+                        <input type="number" step="0.01" x-model="buyFee" @input="calculate" value="0.10"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Sell Fee (%)</label>
+                        <input type="number" step="0.01" x-model="sellFee" @input="calculate" value="0.10"
                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 transition-colors duration-300">
                     </div>
                 </div>
@@ -250,7 +255,8 @@
                 stopLoss: '',
                 takeProfit: '',
                 riskAmount: '',
-                totalFee: 0.2,
+                buyFee: 0.10,  // Fee beli 0.10%
+                sellFee: 0.10,  // Fee jual 0.10%
                 exchangeRate: null,
                 darkMode: false,
                 
@@ -277,7 +283,6 @@
                 },
                 
                 checkDarkModePreference() {
-                    // Check localStorage first
                     if (localStorage.getItem('darkMode') === 'true') {
                         this.darkMode = true;
                         document.documentElement.classList.add('dark');
@@ -285,7 +290,6 @@
                         this.darkMode = false;
                         document.documentElement.classList.remove('dark');
                     } else {
-                        // Fallback to system preference
                         this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                         if (this.darkMode) {
                             document.documentElement.classList.add('dark');
@@ -311,7 +315,6 @@
                         this.exchangeRate = data.tether.idr;
                     } catch (error) {
                         console.error('Error fetching exchange rate:', error);
-                        // Fallback rate if API fails
                         this.exchangeRate = 15000;
                     }
                 },
@@ -325,34 +328,35 @@
                     const sl = parseFloat(this.stopLoss);
                     const tp = parseFloat(this.takeProfit);
                     const risk = parseFloat(this.riskAmount);
-                    const fee = parseFloat(this.totalFee) / 100;
+                    const buyFeeDecimal = parseFloat(this.buyFee) / 100;  // 0.10% -> 0.001
+                    const sellFeeDecimal = parseFloat(this.sellFee) / 100; // 0.10% -> 0.001
                     
-                    // Calculate coin amount (considering fee)
+                    // Hitung jumlah koin (termasuk fee beli)
                     const positionSize = risk / Math.abs(entry - sl);
                     this.coinAmount = positionSize;
                     
-                    // Calculate investment (including buy fee)
-                    this.investmentUSDT = entry * positionSize * (1 + fee);
+                    // Hitung investasi (termasuk fee beli)
+                    this.investmentUSDT = entry * positionSize * (1 + buyFeeDecimal);
                     this.investmentIDR = this.investmentUSDT * this.exchangeRate;
                     
-                    // Calculate loss (including sell fee)
-                    const exitLossAmount = sl * positionSize * (1 - fee);
+                    // Hitung loss (termasuk fee jual)
+                    const exitLossAmount = sl * positionSize * (1 - sellFeeDecimal);
                     this.lossUSDT = this.investmentUSDT - exitLossAmount;
                     this.lossIDR = this.lossUSDT * this.exchangeRate;
                     
-                    // Calculate profit (including sell fee)
-                    const exitProfitAmount = tp * positionSize * (1 - fee);
+                    // Hitung profit (termasuk fee jual)
+                    const exitProfitAmount = tp * positionSize * (1 - sellFeeDecimal);
                     this.profitUSDT = exitProfitAmount - this.investmentUSDT;
                     this.profitIDR = this.profitUSDT * this.exchangeRate;
                     
-                    // Calculate PNL percentages
+                    // Hitung PNL (%)
                     this.pnlLoss = (this.lossUSDT / this.investmentUSDT) * 100;
                     this.pnlProfit = (this.profitUSDT / this.investmentUSDT) * 100;
                     
-                    // Calculate risk/reward ratio
+                    // Hitung risk/reward ratio
                     this.riskRewardRatio = this.profitUSDT / this.lossUSDT;
                     
-                    // Calculate risk percentage
+                    // Hitung risk percentage
                     this.riskPercentage = (this.lossUSDT / this.investmentUSDT) * 100;
                     
                     this.resultsCalculated = true;
@@ -375,6 +379,8 @@
                         stopLoss: parseFloat(this.stopLoss),
                         takeProfit: parseFloat(this.takeProfit),
                         riskAmount: parseFloat(this.riskAmount),
+                        buyFee: parseFloat(this.buyFee),
+                        sellFee: parseFloat(this.sellFee),
                         coinAmount: this.coinAmount,
                         investmentUSDT: this.investmentUSDT,
                         profitUSDT: this.profitUSDT,
@@ -394,6 +400,8 @@
                         this.stopLoss = item.stopLoss;
                         this.takeProfit = item.takeProfit;
                         this.riskAmount = item.riskAmount;
+                        this.buyFee = item.buyFee;
+                        this.sellFee = item.sellFee;
                         
                         this.calculate();
                     }
